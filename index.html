@@ -7,21 +7,25 @@
 <title>Desafio Matemático</title>
 <style>
   :root {
-    --night: #0b1a3d;
-    --card: rgba(9, 20, 52, 0.86);
-    --sky: #8fb8ff;
-    --moon: #f6c945;
-    --text: #f4f7ff;
-    --text-soft: #b9c9ec;
+    --night: #07152f;
+    --card: rgba(5, 14, 39, 0.88);
+    --sky: #9bcaff;
+    --moon: #ffd95b;
+    --text: #f7f8ff;
+    --text-soft: #c3d7f5;
     --bad: #c8402f;
+    --blue: #4e83c5;
   }
   * { box-sizing: border-box; }
   html, body { min-height: 100%; margin: 0; }
   body {
-    background-color: var(--night);
-    background-image: linear-gradient(rgba(6, 14, 40, 0.38), rgba(6, 14, 40, 0.58)), url("fundo.webp");
-    background-size: cover;
-    background-position: center center;
+    position: relative;
+    isolation: isolate;
+    overflow-x: hidden;
+    background:
+      radial-gradient(ellipse at 67% 37%, rgba(255, 218, 91, .95) 0 3%, rgba(255, 203, 75, .52) 7%, transparent 20%),
+      conic-gradient(from 215deg at 67% 39%, transparent 0 9%, rgba(105, 165, 226, .34) 12%, transparent 18%, rgba(46, 99, 169, .48) 25%, transparent 33%, rgba(127, 184, 238, .32) 42%, transparent 50%, rgba(43, 91, 157, .5) 62%, transparent 70%),
+      radial-gradient(ellipse at 50% 45%, #285a98 0%, #173d72 37%, #0a214b 72%, #050e25 100%);
     background-attachment: fixed;
     color: var(--text);
     font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
@@ -29,24 +33,73 @@
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    padding: 16px;
+    padding: 24px 16px;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: -25%;
+    z-index: -1;
+    pointer-events: none;
+    opacity: .62;
+    background: repeating-radial-gradient(ellipse at 66% 38%, transparent 0 42px, rgba(169, 211, 255, .22) 47px 52px, transparent 58px 82px);
+    transform: rotate(-17deg);
+  }
+  body::after {
+    content: "✦     ★       ·          ✧       ★     ·       ✦       ★       ·       ✧";
+    position: fixed;
+    inset: 5% 2% auto;
+    z-index: -1;
+    color: #ffdf68;
+    font-size: clamp(20px, 4vw, 42px);
+    letter-spacing: clamp(8px, 3vw, 36px);
+    line-height: 2.8;
+    text-shadow: 0 0 18px rgba(255, 218, 91, .8);
+    pointer-events: none;
+    opacity: .9;
+  }
+  .cat-art {
+    position: fixed;
+    z-index: -1;
+    width: min(46vw, 510px);
+    min-width: 260px;
+    left: -5%;
+    bottom: -17%;
+    opacity: .84;
+    filter: drop-shadow(0 8px 28px rgba(0, 0, 0, .55));
+    pointer-events: none;
   }
   main {
     width: 100%;
-    max-width: 600px;
+    position: relative;
+    z-index: 1;
+    max-width: 620px;
     background: var(--card);
     -webkit-backdrop-filter: blur(6px);
     backdrop-filter: blur(6px);
-    border: 2px solid var(--moon);
-    border-radius: 18px;
-    box-shadow: 0 0 0 6px rgba(246, 201, 69, 0.18), 0 18px 40px rgba(0, 0, 0, 0.5);
-    padding: 24px;
+    border: 1px solid rgba(255, 220, 105, .9);
+    border-radius: 26px;
+    box-shadow: 0 0 0 7px rgba(246, 201, 69, 0.12), 0 22px 70px rgba(0, 0, 0, 0.58), inset 0 0 36px rgba(95, 147, 216, .1);
+    padding: clamp(20px, 4vw, 34px);
   }
+  .brand-mark {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    color: var(--moon);
+    font-size: 1.35rem;
+    text-shadow: 0 0 18px rgba(255, 217, 91, .55);
+  }
+  .brand-mark span { font-size: 1.7rem; }
   h1 {
     margin: 0 0 8px;
     text-align: center;
     color: var(--moon);
-    font-size: clamp(1.5rem, 5vw, 2rem);
+    font-size: clamp(1.65rem, 5vw, 2.25rem);
+    letter-spacing: .02em;
+    text-shadow: 0 2px 18px rgba(255, 213, 90, .22);
   }
   .subtitle {
     margin: 0 0 22px;
@@ -70,8 +123,8 @@
     font: inherit;
     color: var(--text);
     background: var(--night);
-    border: 2px solid var(--sky);
-    border-radius: 8px;
+    border: 1px solid rgba(155, 202, 255, .8);
+    border-radius: 10px;
     padding: 4px 8px;
   }
   .prompt {
@@ -94,8 +147,8 @@
   .equation.big { font-size: clamp(2.6rem, 12vw, 4.4rem); white-space: nowrap; line-height: 1.2; }
   .equation.poly { font-size: clamp(1.5rem, 6vw, 2.3rem); }
   .equation span {
-    background: radial-gradient(ellipse at center, rgba(246, 201, 69, 0.32), rgba(246, 201, 69, 0) 72%);
-    border-bottom: 3px solid var(--moon);
+    background: radial-gradient(ellipse at center, rgba(246, 201, 69, 0.28), rgba(246, 201, 69, 0) 72%);
+    border-bottom: 2px solid var(--moon);
     padding: 0 8px;
   }
   .options {
@@ -108,15 +161,16 @@
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--text);
-    background: rgba(23, 38, 90, 0.9);
-    border: 2px solid var(--sky);
-    border-radius: 12px;
+    background: linear-gradient(145deg, rgba(40, 78, 133, .92), rgba(14, 34, 78, .96));
+    border: 1px solid rgba(155, 202, 255, .78);
+    border-radius: 15px;
     padding: 18px 8px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 7px 18px rgba(0,0,0,.2);
     cursor: pointer;
     transition: transform 0.08s, background 0.15s, color 0.15s;
   }
   .options.poly button { font-size: clamp(1.05rem, 4.2vw, 1.35rem); }
-  .options button:hover:not(:disabled) { background: var(--moon); color: var(--night); border-color: var(--moon); transform: translateY(-2px); }
+  .options button:hover:not(:disabled) { background: linear-gradient(145deg, #ffe78c, var(--moon)); color: var(--night); border-color: #fff1b7; transform: translateY(-2px); box-shadow: 0 0 22px rgba(255, 217, 91, .3); }
   .options button:focus-visible { outline: 3px solid var(--moon); outline-offset: 3px; }
   .options button.correct { background: var(--moon); color: var(--night); border-color: #fff; box-shadow: 0 0 22px rgba(246, 201, 69, 0.8); }
   .options button.wrong { background: var(--bad); color: #fff; border-color: #ff9a88; animation: shake 0.3s; }
@@ -131,15 +185,43 @@
     text-align: center;
     color: var(--text-soft);
   }
+  @media (max-width: 560px) {
+    body { padding: 14px 10px; }
+    main { border-radius: 20px; }
+    .top { align-items: flex-start; }
+    .filters { width: 100%; justify-content: space-between; }
+    .filters label { display: grid; gap: 5px; flex: 1; }
+    .options { gap: 9px; }
+    .options button { padding: 16px 5px; font-size: 1.3rem; }
+    .cat-art { width: 75vw; left: -22%; bottom: -5%; opacity: .38; }
+  }
   @media (prefers-reduced-motion: reduce) {
     .options button, .options button.wrong { transition: none; animation: none; }
   }
 </style>
 </head>
 <body>
+<svg class="cat-art" viewBox="0 0 520 650" aria-hidden="true">
+  <defs>
+    <linearGradient id="fur" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#263653"/><stop offset=".48" stop-color="#080f22"/><stop offset="1" stop-color="#030817"/></linearGradient>
+    <linearGradient id="ear" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#bd8290"/><stop offset="1" stop-color="#39263d"/></linearGradient>
+  </defs>
+  <path d="M90 650 Q45 520 112 410 Q75 340 60 210 L165 275 Q235 230 322 270 L420 190 Q430 310 390 390 Q475 475 465 650Z" fill="url(#fur)" stroke="#6d8db7" stroke-width="5"/>
+  <path d="M88 300 Q45 185 62 90 L190 205 Q255 170 330 205 L445 105 Q455 220 397 315 Q350 395 245 397 Q130 390 88 300Z" fill="url(#fur)" stroke="#718daf" stroke-width="5"/>
+  <path d="M82 122 L160 213 L110 196Z M365 210 L430 135 L399 230Z" fill="url(#ear)"/>
+  <path d="M145 270 Q190 230 242 272 Q210 325 158 300Z" fill="#f4d36b"/>
+  <path d="M280 270 Q335 230 374 267 Q350 318 298 302Z" fill="#f4d36b"/>
+  <ellipse cx="199" cy="282" rx="12" ry="29" fill="#11182a"/><ellipse cx="329" cy="281" rx="12" ry="29" fill="#11182a"/>
+  <path d="M238 330 Q260 316 278 331 Q260 350 238 330Z" fill="#d88e9b"/>
+  <path d="M260 347 Q238 370 212 355 M260 347 Q282 370 307 355" fill="none" stroke="#8b9ab4" stroke-width="4" stroke-linecap="round"/>
+  <path d="M125 345 L20 330 M130 370 L18 382 M390 345 L500 325 M388 370 L500 390" stroke="#a9c7e9" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+  <path d="M145 430 Q255 480 370 425" fill="none" stroke="#35547d" stroke-width="7" opacity=".8"/>
+  <path d="M175 495 Q260 540 345 495" fill="none" stroke="#263e63" stroke-width="6"/>
+</svg>
 <main>
+  <div class="brand-mark"><span>✦</span> ✧ <span>★</span> ✧ <span>✦</span></div>
   <h1>Desafio Matemático</h1>
-  <p class="subtitle">Resolva a conta e escolha uma das quatro respostas.</p>
+  <p class="subtitle">Sob um céu estrelado, desafie sua mente: escolha a resposta correta.</p>
   <div class="top">
     <div>Acertos: <b id="score">0</b> &nbsp; Sequência: <b id="streak">0</b></div>
     <div class="filters">
