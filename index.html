@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="theme-color" content="#0b1a3d">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Criador de equações</title>
+<title>Desafio Matemático</title>
 <style>
   :root {
     --night: #0b1a3d;
@@ -41,6 +41,18 @@
     border-radius: 18px;
     box-shadow: 0 0 0 6px rgba(246, 201, 69, 0.18), 0 18px 40px rgba(0, 0, 0, 0.5);
     padding: 24px;
+  }
+  h1 {
+    margin: 0 0 8px;
+    text-align: center;
+    color: var(--moon);
+    font-size: clamp(1.5rem, 5vw, 2rem);
+  }
+  .subtitle {
+    margin: 0 0 22px;
+    text-align: center;
+    color: var(--text-soft);
+    font-size: 0.95rem;
   }
   .top {
     display: flex;
@@ -126,13 +138,15 @@
 </head>
 <body>
 <main>
+  <h1>Desafio Matemático</h1>
+  <p class="subtitle">Resolva a conta e escolha uma das quatro respostas.</p>
   <div class="top">
     <div>Acertos: <b id="score">0</b> &nbsp; Sequência: <b id="streak">0</b></div>
     <div class="filters">
       <label>Conteúdo
         <select id="topic">
-          <option value="mix" selected>Misto</option>
-          <option value="arith">Contas</option>
+          <option value="arith" selected>Contas</option>
+          <option value="mix">Misto</option>
           <option value="poly">Polinômios</option>
         </select>
       </label>
@@ -249,7 +263,7 @@
     else { const m = level === 2 ? 10 : 15; b = rand(2, m); answer = rand(2, m); a = b * answer; }
     return {
       kind: 'big',
-      prompt: 'Calcule:',
+      prompt: 'Resolva a conta:',
       expr: `<span>${a} ${op} ${b}</span> = ?`,
       options: numOptions(answer, false)
     };
@@ -428,7 +442,7 @@
       streak++;
       scoreEl.textContent = score;
       streakEl.textContent = streak;
-      msgEl.textContent = 'Certo!';
+      msgEl.textContent = 'Muito bem! Próxima questão...';
       [...optionsEl.children].forEach(b => (b.disabled = true));
       setTimeout(nextQuestion, 700);
     } else {
