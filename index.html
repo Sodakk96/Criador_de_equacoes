@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#0b1a3d">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Criador de equações</title>
+<style>
+  :root {
+    --night: #0b1a3d;
+    --card: rgba(9, 20, 52, 0.86);
+    --sky: #8fb8ff;
+    --moon: #f6c945;
+    --text: #f4f7ff;
+    --text-soft: #b9c9ec;
+    --bad: #c8402f;
+  }
+  * { box-sizing: border-box; }
+  html, body { min-height: 100%; margin: 0; }
+  body {
+    background-color: var(--night);
+    background-image: linear-gradient(rgba(6, 14, 40, 0.25), rgba(6, 14, 40, 0.45)), url("fundo.jpg");
+    background-size: cover;
+    background-position: 35% center;
+    background-attachment: fixed;
+    color: var(--text);
+    font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 16px;
+  }
+  main {
+    width: 100%;
+    max-width: 600px;
+    background: var(--card);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    border: 2px solid var(--moon);
+    border-radius: 18px;
+    box-shadow: 0 0 0 6px rgba(246, 201, 69, 0.18), 0 18px 40px rgba(0, 0, 0, 0.5);
+    padding: 24px;
+  }
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    color: var(--text-soft);
+  }
+  .top b { color: var(--moon); font-size: 1.15rem; }
+  .filters { display: flex; gap: 12px; flex-wrap: wrap; }
+  select {
+    font: inherit;
+    color: var(--text);
+    background: var(--night);
+    border: 2px solid var(--sky);
+    border-radius: 8px;
+    padding: 4px 8px;
+  }
+  .prompt {
+    min-height: 2.6em;
+    margin: 0;
+    text-align: center;
+    font-size: 1.05rem;
+    color: var(--text-soft);
+  }
+  .prompt sup, .equation sup, .options sup { font-size: 0.6em; line-height: 0; }
+  .equation {
+    font-family: Georgia, "Times New Roman", serif;
+    text-align: center;
+    margin: 8px 0 28px;
+    letter-spacing: 0.02em;
+    line-height: 1.5;
+    color: #fff;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+  }
+  .equation.big { font-size: clamp(2.6rem, 12vw, 4.4rem); white-space: nowrap; line-height: 1.2; }
+  .equation.poly { font-size: clamp(1.5rem, 6vw, 2.3rem); }
+  .equation span {
+    background: radial-gradient(ellipse at center, rgba(246, 201, 69, 0.32), rgba(246, 201, 69, 0) 72%);
+    border-bottom: 3px solid var(--moon);
+    padding: 0 8px;
+  }
+  .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .options button {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    background: rgba(23, 38, 90, 0.9);
+    border: 2px solid var(--sky);
+    border-radius: 12px;
+    padding: 18px 8px;
+    cursor: pointer;
+    transition: transform 0.08s, background 0.15s, color 0.15s;
+  }
+  .options.poly button { font-size: clamp(1.05rem, 4.2vw, 1.35rem); }
+  .options button:hover:not(:disabled) { background: var(--moon); color: var(--night); border-color: var(--moon); transform: translateY(-2px); }
+  .options button:focus-visible { outline: 3px solid var(--moon); outline-offset: 3px; }
+  .options button.correct { background: var(--moon); color: var(--night); border-color: #fff; box-shadow: 0 0 22px rgba(246, 201, 69, 0.8); }
+  .options button.wrong { background: var(--bad); color: #fff; border-color: #ff9a88; animation: shake 0.3s; }
+  .options button:disabled { cursor: default; }
+  @keyframes shake {
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+  .msg {
+    min-height: 1.6em;
+    margin: 18px 0 0;
+    text-align: center;
+    color: var(--text-soft);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .options button, .options button.wrong { transition: none; animation: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div>Acertos: <b id="score">0</b> &nbsp; Sequência: <b id="streak">0</b></div>
+    <div class="filters">
+      <label>Conteúdo
+        <select id="topic">
+          <option value="mix" selected>Misto</option>
+          <option value="arith">Contas</option>
+          <option value="poly">Polinômios</option>
+        </select>
+      </label>
+      <label>Nível
+        <select id="level">
+          <option value="1">Fácil</option>
+          <option value="2" selected>Médio</option>
+          <option value="3">Difícil</option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <p class="prompt" id="prompt"></p>
+  <div class="equation big" id="equation" aria-live="polite"></div>
+
+  <div class="options" id="options"></div>
+
+  <p class="msg" id="msg">Escolha a resposta certa.</p>
+</main>
+
+<script>
+  const promptEl = document.getElementById('prompt');
+  const equationEl = document.getElementById('equation');
+  const optionsEl = document.getElementById('options');
+  const msgEl = document.getElementById('msg');
+  const scoreEl = document.getElementById('score');
+  const streakEl = document.getElementById('streak');
+  const levelEl = document.getElementById('level');
+  const topicEl = document.getElementById('topic');
+
+  let score = 0;
+  let streak = 0;
+  let locked = false;
+
+  const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+  const pick = arr => arr[rand(0, arr.length - 1)];
+  const shuffle = arr => arr.sort(() => Math.random() - 0.5);
+  const nonZero = max => { let n = 0; while (n === 0) n = rand(-max, max); return n; };
+
+  // ---------- Polinômios: vetor de coeficientes [c0, c1, c2, ...] ----------
+  const trim = c => { c = c.slice(); while (c.length > 1 && c[c.length - 1] === 0) c.pop(); return c; };
+  const add = (a, b) => trim(Array.from({ length: Math.max(a.length, b.length) }, (_, i) => (a[i] || 0) + (b[i] || 0)));
+  const sub = (a, b) => add(a, b.map(v => -v));
+  const mul = (a, b) => {
+    const r = Array(a.length + b.length - 1).fill(0);
+    a.forEach((x, i) => b.forEach((y, j) => (r[i + j] += x * y)));
+    return trim(r);
+  };
+  const evalP = (c, x) => c.reduce((s, k, d) => s + k * Math.pow(x, d), 0);
+
+  function fmtPoly(c) {
+    c = trim(c);
+    let s = '';
+    for (let d = c.length - 1; d >= 0; d--) {
+      const k = c[d];
+      if (!k) continue;
+      const abs = Math.abs(k);
+      let term;
+      if (d === 0) term = `${abs}`;
+      else term = (abs === 1 ? '' : abs) + 'x' + (d > 1 ? `<sup>${d}</sup>` : '');
+      if (!s) s = (k < 0 ? '−' : '') + term;
+      else s += (k < 0 ? ' − ' : ' + ') + term;
+    }
+    return s || '0';
+  }
+  const par = c => `(${fmtPoly(c)})`;
+  const fmtNum = n => (n < 0 ? '−' + Math.abs(n) : '' + n);
+  const fmtArg = n => (n < 0 ? `(−${Math.abs(n)})` : `${n}`);
+
+  // ---------- Opções ----------
+  function numOptions(answer, allowNeg) {
+    const set = new Set([answer]);
+    const spread = Math.max(5, Math.round(Math.abs(answer) * 0.25));
+    let tries = 0;
+    while (set.size < 4 && tries < 300) {
+      tries++;
+      const w = answer + rand(-spread, spread);
+      if (allowNeg || w >= 0) set.add(w);
+    }
+    let n = 1;
+    while (set.size < 4) set.add(answer + n++);
+    return shuffle([...set].map(v => ({ html: fmtNum(v), correct: v === answer })));
+  }
+
+  function polyOptions(answer) {
+    answer = trim(answer);
+    const map = new Map();
+    map.set(fmtPoly(answer), { html: fmtPoly(answer), correct: true });
+    let tries = 0;
+    while (map.size < 4 && tries < 400) {
+      tries++;
+      const c = answer.slice();
+      const i = rand(0, c.length - 1);
+      if (Math.random() < 0.35 && c[i] !== 0) c[i] = -c[i];
+      else c[i] += rand(1, 3) * (Math.random() < 0.5 ? 1 : -1);
+      const t = trim(c);
+      if (t.length !== answer.length) continue;
+      const key = fmtPoly(t);
+      if (!map.has(key)) map.set(key, { html: key, correct: false });
+    }
+    return shuffle([...map.values()]);
+  }
+
+  // ---------- Contas ----------
+  function arithQuestion(level) {
+    const max = { 1: 12, 2: 50, 3: 99 }[level];
+    const ops = level === 1 ? ['+', '−'] : ['+', '−', '×', '÷'];
+    const op = pick(ops);
+    let a, b, answer;
+    if (op === '+') { a = rand(1, max); b = rand(1, max); answer = a + b; }
+    else if (op === '−') { a = rand(1, max); b = rand(1, a); answer = a - b; }
+    else if (op === '×') { const m = level === 2 ? 10 : 15; a = rand(2, m); b = rand(2, m); answer = a * b; }
+    else { const m = level === 2 ? 10 : 15; b = rand(2, m); answer = rand(2, m); a = b * answer; }
+    return {
+      kind: 'big',
+      prompt: 'Calcule:',
+      expr: `<span>${a} ${op} ${b}</span> = ?`,
+      options: numOptions(answer, false)
+    };
+  }
+
+  // ---------- Polinômios (ensino médio) ----------
+  const randPoly = (deg, max) => {
+    const c = [];
+    for (let i = 0; i <= deg; i++) c.push(i === deg ? nonZero(max) : rand(-max, max));
+    return c;
+  };
+
+  const polyGenerators = {
+    // Nível 1
+    grau() {
+      const deg = rand(2, 5);
+      const p = randPoly(deg, 5);
+      return {
+        prompt: 'Qual é o grau do polinômio?',
+        expr: `<span>P(x) = ${fmtPoly(p)}</span>`,
+        options: numOptions(deg, false).map(o => ({ ...o }))
+      };
+    },
+    valor1() {
+      const p = [nonZero(6), nonZero(4)];
+      const x = rand(-3, 5);
+      return {
+        prompt: `Dado P(x) = ${fmtPoly(p)}, calcule:`,
+        expr: `<span>P(${fmtNum(x)})</span> = ?`,
+        options: numOptions(evalP(p, x), true)
+      };
+    },
+    soma1() {
+      const a = [nonZero(6), nonZero(4)];
+      const b = [nonZero(6), nonZero(4)];
+      const plus = Math.random() < 0.5;
+      return {
+        prompt: plus ? 'Some os polinômios:' : 'Subtraia os polinômios:',
+        expr: `<span>${par(a)} ${plus ? '+' : '−'} ${par(b)}</span>`,
+        options: polyOptions(plus ? add(a, b) : sub(a, b))
+      };
+    },
+    // Nível 2
+    valor2() {
+      const p = randPoly(2, 4);
+      const x = rand(-3, 4);
+      return {
+        prompt: `Dado P(x) = ${fmtPoly(p)}, calcule:`,
+        expr: `<span>P(${fmtNum(x)})</span> = ?`,
+        options: numOptions(evalP(p, x), true)
+      };
+    },
+    soma2() {
+      const a = randPoly(2, 6);
+      const b = randPoly(2, 6);
+      const plus = Math.random() < 0.5;
+      const ans = plus ? add(a, b) : sub(a, b);
+      if (ans.length < 2) return polyGenerators.soma2();
+      return {
+        prompt: plus ? 'Some os polinômios:' : 'Subtraia os polinômios:',
+        expr: `<span>${par(a)} ${plus ? '+' : '−'} ${par(b)}</span>`,
+        options: polyOptions(ans)
+      };
+    },
+    monomio() {
+      const m = [0, nonZero(4)];
+      const b = [nonZero(6), nonZero(4)];
+      return {
+        prompt: 'Multiplique:',
+        expr: `<span>${fmtPoly(m)} · ${par(b)}</span>`,
+        options: polyOptions(mul(m, b))
+      };
+    },
+    raiz() {
+      let r1 = nonZero(5), r2 = nonZero(5);
+      while (r2 === r1) r2 = nonZero(5);
+      const p = mul([-r1, 1], [-r2, 1]);
+      const root = pick([r1, r2]);
+      const set = new Set([root]);
+      let tries = 0;
+      while (set.size < 4 && tries < 300) {
+        tries++;
+        const w = rand(-9, 9);
+        if (w !== r1 && w !== r2) set.add(w);
+      }
+      return {
+        prompt: 'Qual é uma raiz do polinômio?',
+        expr: `<span>${fmtPoly(p)} = 0</span>`,
+        options: shuffle([...set].map(v => ({ html: fmtNum(v), correct: v === root })))
+      };
+    },
+    // Nível 3
+    binomios() {
+      const a = [nonZero(6), rand(1, 3)];
+      const b = [nonZero(6), rand(1, 3)];
+      return {
+        prompt: 'Multiplique os binômios:',
+        expr: `<span>${par(a)} · ${par(b)}</span>`,
+        options: polyOptions(mul(a, b))
+      };
+    },
+    notavel() {
+      const a = [nonZero(7), 1];
+      return {
+        prompt: 'Desenvolva o produto notável:',
+        expr: `<span>${par(a)}<sup>2</sup></span>`,
+        options: polyOptions(mul(a, a))
+      };
+    },
+    valor3() {
+      const p = randPoly(3, 4);
+      const x = rand(-2, 3);
+      return {
+        prompt: `Dado P(x) = ${fmtPoly(p)}, calcule:`,
+        expr: `<span>P(${fmtNum(x)})</span> = ?`,
+        options: numOptions(evalP(p, x), true)
+      };
+    },
+    resto() {
+      const p = randPoly(3, 4);
+      const a = nonZero(3);
+      const divisor = a > 0 ? `x − ${a}` : `x + ${Math.abs(a)}`;
+      return {
+        prompt: 'Teorema do resto: qual é o resto da divisão de P(x) por ' + divisor + '?',
+        expr: `<span>P(x) = ${fmtPoly(p)}</span>`,
+        options: numOptions(evalP(p, a), true)
+      };
+    }
+  };
+
+  const polyByLevel = {
+    1: ['grau', 'valor1', 'soma1'],
+    2: ['valor2', 'soma2', 'monomio', 'raiz'],
+    3: ['binomios', 'notavel', 'valor3', 'resto']
+  };
+
+  function polyQuestion(level) {
+    const q = polyGenerators[pick(polyByLevel[level])]();
+    q.kind = 'poly';
+    return q;
+  }
+
+  function makeQuestion() {
+    const level = levelEl.value;
+    const topic = topicEl.value;
+    const usePoly = topic === 'poly' || (topic === 'mix' && Math.random() < 0.5);
+    return usePoly ? polyQuestion(level) : arithQuestion(level);
+  }
+
+  // ---------- Interface ----------
+  function nextQuestion() {
+    locked = false;
+    const q = makeQuestion();
+    promptEl.innerHTML = q.prompt;
+    equationEl.className = 'equation ' + q.kind;
+    equationEl.innerHTML = q.expr;
+    optionsEl.className = 'options ' + q.kind;
+    optionsEl.innerHTML = '';
+    q.options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.innerHTML = opt.html;
+      btn.dataset.correct = opt.correct ? '1' : '0';
+      btn.addEventListener('click', () => choose(btn));
+      optionsEl.appendChild(btn);
+    });
+    msgEl.textContent = 'Escolha a resposta certa.';
+  }
+
+  function choose(btn) {
+    if (locked) return;
+
+    if (btn.dataset.correct === '1') {
+      locked = true;
+      btn.classList.add('correct');
+      score++;
+      streak++;
+      scoreEl.textContent = score;
+      streakEl.textContent = streak;
+      msgEl.textContent = 'Certo!';
+      [...optionsEl.children].forEach(b => (b.disabled = true));
+      setTimeout(nextQuestion, 700);
+    } else {
+      btn.classList.add('wrong');
+      btn.disabled = true;
+      streak = 0;
+      streakEl.textContent = streak;
+      msgEl.textContent = 'Errou. Tente outra opção.';
+    }
+  }
+
+  levelEl.addEventListener('change', nextQuestion);
+  topicEl.addEventListener('change', nextQuestion);
+  nextQuestion();
+</script>
+</body>
+</html>
